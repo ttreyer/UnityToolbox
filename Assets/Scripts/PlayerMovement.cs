@@ -4,6 +4,20 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
+public struct JumpSettings {
+    public float maxHorizontalDistance;
+    public float minHeight, maxHeight;
+    public float gravityFastFalling;
+
+    public JumpSettings(float maxHorizontalDistance, float minHeight, float maxHeight, float gravityFastFalling) {
+        this.maxHorizontalDistance = maxHorizontalDistance;
+        this.minHeight = minHeight;
+        this.maxHeight = maxHeight;
+        this.gravityFastFalling = gravityFastFalling;
+    }
+}
+
+[Serializable]
 public struct GroundCheck {
     public Vector2 offset;
     public float radius;
@@ -17,12 +31,8 @@ public struct GroundCheck {
 public class PlayerMovement : MonoBehaviour {
     public float horizontalSpeed = 20.0f;
 
-    public float jumpPeakHorizontalDistance = 10.0f;
-    public float jumpMinHeight = 1.0f;
-    public float jumpMaxHeight = 4.0f;
-    public float jumpGravityFastFalling = 1.5f;
-
     public LayerMask whatIsGround;
+    public JumpSettings jump = new JumpSettings(10.0f, 1.0f, 4.0f, 1.5f);
     public GroundCheck groundCheck = new GroundCheck(new Vector2(0.0f, -0.5f), 0.1f);
 
     private Rigidbody2D rbody;
@@ -48,10 +58,10 @@ public class PlayerMovement : MonoBehaviour {
     private void FixedUpdate() {
         // Thanks to https://youtu.be/hG9SzQxaCm8
         // Compute gravities dynamically (should be in Start() for release)
-        jumpMaxHeightTime = jumpPeakHorizontalDistance / horizontalSpeed;
-        jumpSpeed = 2.0f * jumpMaxHeight / jumpMaxHeightTime;
+        jumpMaxHeightTime = jump.maxHorizontalDistance / 2.0f / horizontalSpeed;
+        jumpSpeed = 2.0f * jump.maxHeight / jumpMaxHeightTime;
         gravityMaxHeight = jumpSpeed / jumpMaxHeightTime / physicsGravity;
-        gravityMinHeight = jumpSpeed * jumpSpeed / (2.0f * jumpMinHeight) / physicsGravity;
+        gravityMinHeight = jumpSpeed * jumpSpeed / (2.0f * jump.minHeight) / physicsGravity;
 
         // Ground Check
         isGrounded = Physics2D.OverlapCircle(
@@ -71,7 +81,7 @@ public class PlayerMovement : MonoBehaviour {
 
         // Activate falling gravity
         if (rbody.velocity.y < 0)
-            rbody.gravityScale = jumpGravityFastFalling * gravityMaxHeight;
+            rbody.gravityScale = jump.gravityFastFalling * gravityMaxHeight;
     }
 
     void Flip() {
