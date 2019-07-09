@@ -478,6 +478,8 @@ MonoBehaviour:
     minHeight: 1
     maxHeight: 4
     gravityFastFalling: 1.5
+    wantToDelay: 0.08
+    wasGroundedDelay: 0.1
   groundCheck:
     offset: {x: 0, y: -0.5}
     radius: 0.1

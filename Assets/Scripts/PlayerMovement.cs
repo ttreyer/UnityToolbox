@@ -8,12 +8,15 @@ public struct JumpSettings {
     public float maxHorizontalDistance;
     public float minHeight, maxHeight;
     public float gravityFastFalling;
+    public float wantToDelay, wasGroundedDelay;
 
-    public JumpSettings(float maxHorizontalDistance, float minHeight, float maxHeight, float gravityFastFalling) {
+    public JumpSettings(float maxHorizontalDistance, float minHeight, float maxHeight, float gravityFastFalling, float wantToDelay, float wasGroundedDelay) {
         this.maxHorizontalDistance = maxHorizontalDistance;
         this.minHeight = minHeight;
         this.maxHeight = maxHeight;
         this.gravityFastFalling = gravityFastFalling;
+        this.wantToDelay = wantToDelay;
+        this.wasGroundedDelay = wasGroundedDelay;
     }
 }
 
@@ -32,7 +35,7 @@ public class PlayerMovement : MonoBehaviour {
     public float horizontalSpeed = 20.0f;
 
     public LayerMask whatIsGround;
-    public JumpSettings jump = new JumpSettings(10.0f, 1.0f, 4.0f, 1.5f);
+    public JumpSettings jump = new JumpSettings(10.0f, 1.0f, 4.0f, 1.5f, 0.08f, 0.1f);
     public GroundCheck groundCheck = new GroundCheck(new Vector2(0.0f, -0.5f), 0.1f);
 
     private Rigidbody2D rbody;
@@ -44,6 +47,9 @@ public class PlayerMovement : MonoBehaviour {
     private float jumpMaxHeightTime;
     private float gravityMinHeight;
     private float gravityMaxHeight;
+
+    private float jumpPressedTimer = 0.0f;
+    private float wasGroundedTimer = 0.0f;
 
     private bool isGrounded;
 
@@ -93,13 +99,23 @@ public class PlayerMovement : MonoBehaviour {
     void Update() {
         horizontalMovement = Input.GetAxis("Horizontal");
 
-        if (isGrounded && Input.GetButtonDown("Jump")) {
+        if (Input.GetButtonDown("Jump"))
+            jumpPressedTimer = Time.time + jump.wantToDelay;
+
+        if (isGrounded)
+            wasGroundedTimer = Time.time + jump.wasGroundedDelay;
+
+        bool canJump = wasGroundedTimer > Time.time;
+        bool wantToJump = jumpPressedTimer > Time.time;
+        if (wantToJump && canJump) {
             // Set a light gravity while Jump is down
             rbody.gravityScale = gravityMaxHeight;
             rbody.velocity = jumpSpeed * Vector2.up;
+            jumpPressedTimer = wasGroundedTimer = 0.0f;
         } else if (Input.GetButtonUp("Jump")) {
             // Set a heavier gravity when Jump is released
             rbody.gravityScale = gravityMinHeight;
+            jumpPressedTimer = 0.0f;
         }
     }
 }
