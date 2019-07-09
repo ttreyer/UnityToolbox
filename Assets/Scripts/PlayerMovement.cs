@@ -1,6 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+[Serializable]
+public struct GroundCheck {
+    public Vector2 offset;
+    public float radius;
+
+    public GroundCheck(Vector2 offset, float radius) {
+        this.offset = offset;
+        this.radius = radius;
+    }
+}
 
 public class PlayerMovement : MonoBehaviour {
     public float horizontalSpeed = 20.0f;
@@ -11,11 +23,7 @@ public class PlayerMovement : MonoBehaviour {
     public float jumpGravityFastFalling = 1.5f;
 
     public LayerMask whatIsGround;
-
-    // Add a CircleCollider2D to a child object of the Player
-    // and use the offset and radius property to visually set
-    // the ground check properties.
-    public CircleCollider2D groundCheck;
+    public GroundCheck groundCheck = new GroundCheck(new Vector2(0.0f, -0.5f), 0.1f);
 
     private Rigidbody2D rbody;
     private float physicsGravity;
@@ -31,10 +39,6 @@ public class PlayerMovement : MonoBehaviour {
 
     void Start() {
         rbody = GetComponent<Rigidbody2D>();
-
-        // GroundCheck is only used for its values,
-        // we can disable it once we're done configuring it in the editor.
-        groundCheck.enabled = false;
 
         // We need to take the gravity setting into account,
         // since we will change rbody.gravityScale
